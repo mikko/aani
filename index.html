@@ -1,0 +1,30 @@
+<html>
+	<head>
+		<script type="text/javascript" src="underscore.js"></script>
+		<script type="text/javascript" src="jquery.js"></script>
+		<script type="text/javascript" src="audio.js"></script>
+		<style>
+			.visualization {
+				height: 300px;
+			}
+			.visualization > span {
+			    background-color: gray;
+				height: 0px;
+				width: 30px;
+				border: 1px solid black;
+				display: inline-block;
+				
+			}
+		</style>
+	</head>
+	<body>
+		<input id="audio_file" type="file" accept="audio/*" />
+		<h3 id="file_name">No file loaded</h3>
+		<div class="visualization"></div>
+		<script>
+			audio_file.onchange = audioFileUploaded;
+
+			//audioInit();
+		</script
+	</body>
+</html>

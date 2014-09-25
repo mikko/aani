@@ -1,0 +1,88 @@
+var audioFileUploaded = function() {
+	console.log("Audio file uploaded");
+	console.log(arguments);
+	console.log(this.files);
+	window.file = this.files[0];
+	$('#file_name').text("Loaded " + this.files[0].name);
+	
+	var reader = new FileReader();
+
+	reader.onload = function(e) {
+		audioInit(e.target.result);
+	};
+
+	reader.readAsArrayBuffer(this.files[0]);
+
+}
+
+var createSoundSource = function(context, audioData) {
+	// create a sound source
+	soundSource = context.createBufferSource();
+ 
+	// The Audio Context handles creating source
+	// buffers from raw binary data
+	soundBuffer = context.decodeAudioData(
+		audioData, 
+		function onSuccess(decodedBuffer) {
+
+			// Add the buffered data to our object
+			soundSource.buffer = decodedBuffer;
+
+			var analyser = context.createAnalyser();
+			soundSource.connect(analyser);
+			analyser.connect(context.destination);
+
+			analyser.fftSize = 32;
+			var bufferLength = analyser.frequencyBinCount;
+			var dataArray = new Uint8Array(bufferLength);
+			analyser.getByteTimeDomainData(dataArray);
+			
+			_.range(analyser.fftSize / 2).forEach(function(i) {
+				$('.visualization').append($('<span>&nbsp;</span>'));
+			});
+
+			function getFrequencies() {
+				var getFrequenciesFrame = requestAnimationFrame(getFrequencies);
+				analyser.getByteTimeDomainData(dataArray);
+				var elements = $('.visualization > span');
+				_.forEach(dataArray, function(v, i) { 
+					var height = v;
+					$('.visualization > span').eq(i).css('height', height + 'px');
+				});
+			}
+			getFrequencies();
+			soundSource.start(context.currentTime); // play the source immediately
+
+		}, 
+		function multiFail() { 
+			console.log("Multifail", arguments); 
+		});
+}
+
+var audioInit = function(audioFile) {
+	if( !audioFile ) return;
+	var context;
+	if (typeof AudioContext !== "undefined") {
+	    context = new AudioContext();
+	} else if (typeof webkitAudioContext !== "undefined") {
+	    context = new webkitAudioContext();
+	} else {
+	    throw new Error('AudioContext not supported. :(');
+	}
+
+	createSoundSource(context, audioFile);
+
+/*
+	var request = new XMLHttpRequest();
+	request.open("GET", "knife.mp3", true);
+	request.responseType = "arraybuffer";
+	 
+	// Our asynchronous callback
+	request.onload = function() {
+	    var audioData = request.response;
+	    createSoundSource(audioData);
+	};
+	request.send();
+*/
+
+};
