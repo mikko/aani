@@ -3,24 +3,34 @@
 		<script type="text/javascript" src="underscore.js"></script>
 		<script type="text/javascript" src="jquery.js"></script>
 		<script type="text/javascript" src="audio.js"></script>
+		<script type="text/javascript" src="d3.v3.min.js"></script>
 		<style>
 			.visualization {
-				height: 300px;
+				width: 600px;
+				height: 500px;
 			}
-			.visualization > span {
-			    background-color: gray;
-				height: 0px;
-				width: 30px;
-				border: 1px solid black;
-				display: inline-block;
-				
+			.d3-container, .d3-visualization {
+				width: 600px;
+				height: 400px;
+				display: table-cell;
+				vertical-align: middle;
+				text-align: center;
+  				-webkit-user-select: none;
+  				transform-style: preserve-3d;
+			}
+			.d3-history {
+				position: absolute;
 			}
 		</style>
 	</head>
 	<body>
 		<input id="audio_file" type="file" accept="audio/*" />
 		<h3 id="file_name">No file loaded</h3>
-		<div class="visualization"></div>
+		<div class="visualization">
+			<div class="d3-container">
+				<svg class="d3-visualization" width="600px" height:"400px"></svg>
+			</div>
+		</div>
 		<script>
 			audio_file.onchange = audioFileUploaded;
 

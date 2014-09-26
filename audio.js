@@ -1,19 +1,46 @@
 var audioFileUploaded = function() {
-	console.log("Audio file uploaded");
-	console.log(arguments);
-	console.log(this.files);
-	window.file = this.files[0];
 	$('#file_name').text("Loaded " + this.files[0].name);
-	
 	var reader = new FileReader();
-
 	reader.onload = function(e) {
 		audioInit(e.target.result);
 	};
-
 	reader.readAsArrayBuffer(this.files[0]);
-
 }
+
+var stash = {};
+stash.history = [];
+stash.historyIndex = 0;
+stash.historyLevels = 2;
+
+var audioInit = function(audioFile) {
+	if( !audioFile ) return;
+	var context;
+	if (typeof AudioContext !== "undefined") {
+	    context = new AudioContext();
+	} else if (typeof webkitAudioContext !== "undefined") {
+	    context = new webkitAudioContext();
+	} else {
+	    throw new Error('AudioContext not supported. :(');
+	}
+
+	stash.color = d3.interpolateRgb("orange", "blue");
+
+	createSoundSource(context, audioFile);
+
+/*
+	var request = new XMLHttpRequest();
+	request.open("GET", "knife.mp3", true);
+	request.responseType = "arraybuffer";
+	 
+	// Our asynchronous callback
+	request.onload = function() {
+	    var audioData = request.response;
+	    createSoundSource(audioData);
+	};
+	request.send();
+*/
+
+};
 
 var createSoundSource = function(context, audioData) {
 	// create a sound source
@@ -32,7 +59,7 @@ var createSoundSource = function(context, audioData) {
 			soundSource.connect(analyser);
 			analyser.connect(context.destination);
 
-			analyser.fftSize = 32;
+			analyser.fftSize = 128;
 			var bufferLength = analyser.frequencyBinCount;
 			var dataArray = new Uint8Array(bufferLength);
 			analyser.getByteTimeDomainData(dataArray);
@@ -41,16 +68,10 @@ var createSoundSource = function(context, audioData) {
 				$('.visualization').append($('<span>&nbsp;</span>'));
 			});
 
-			function getFrequencies() {
-				var getFrequenciesFrame = requestAnimationFrame(getFrequencies);
-				analyser.getByteTimeDomainData(dataArray);
-				var elements = $('.visualization > span');
-				_.forEach(dataArray, function(v, i) { 
-					var height = v;
-					$('.visualization > span').eq(i).css('height', height + 'px');
-				});
-			}
-			getFrequencies();
+			stash.analyser = analyser;
+			stash.dataArray = dataArray;
+
+			visualize();
 			soundSource.start(context.currentTime); // play the source immediately
 
 		}, 
@@ -59,30 +80,50 @@ var createSoundSource = function(context, audioData) {
 		});
 }
 
-var audioInit = function(audioFile) {
-	if( !audioFile ) return;
-	var context;
-	if (typeof AudioContext !== "undefined") {
-	    context = new AudioContext();
-	} else if (typeof webkitAudioContext !== "undefined") {
-	    context = new webkitAudioContext();
-	} else {
-	    throw new Error('AudioContext not supported. :(');
+var visualize = function() {
+	requestAnimationFrame(visualize);
+	
+	stash.analyser.getByteTimeDomainData(stash.dataArray);
+	
+	var barClass = 'barClass';
+	var barWidth = 10;
+	var barMaxHeight = 200;
+	var sampleCount = stash.dataArray.length;
+
+	var barHeights = _.map(stash.dataArray, function(v,i) {
+		return v / 255 * barMaxHeight;
+	});
+
+	if( stash.historyIndex > stash.historyLevels ) {
+		stash.historyIndex = 0;
 	}
-
-	createSoundSource(context, audioFile);
-
-/*
-	var request = new XMLHttpRequest();
-	request.open("GET", "knife.mp3", true);
-	request.responseType = "arraybuffer";
-	 
-	// Our asynchronous callback
-	request.onload = function() {
-	    var audioData = request.response;
-	    createSoundSource(audioData);
+	else {
+		++stash.historyIndex;
+	}
+	
+	var getY = function(v) {
+		return barMaxHeight - v;
 	};
-	request.send();
-*/
 
-};
+	// Create
+	d3.select('.d3-visualization')
+		.selectAll('.' + barClass)
+		.data(barHeights)
+		.enter()
+		.append('rect')
+		.attr('class', barClass)
+		.attr('fill', function(v,i) { return stash.color(i/sampleCount); })
+		.attr('x', function(v, i) { return (i + 0.5) * barWidth})
+		.attr('y', getY)
+		.attr('width', barWidth * 0.8)
+		.attr('height', _.identity);
+
+	// Update
+	d3.select('.d3-visualization')
+		.selectAll('.' + barClass)
+		.data(barHeights)
+		//.transition()
+		//.duration(50)
+		.attr('y', getY)
+		.attr('height', _.identity);
+}
