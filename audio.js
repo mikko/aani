@@ -11,7 +11,7 @@ var stash = {};
 stash.history = [];
 stash.historyIndex = 0;
 stash.historyLevels = 2;
-stash.barCount = 128;
+stash.barCount = 1024;
 stash.colorPhase = 0;
 
 var userMediaGot = function(stream) {
@@ -75,8 +75,12 @@ var createSoundSource = function(context, audioData) {
 		// Add the buffered data to our object
 		soundSource.buffer = decodedBuffer;
 
+		var lowFilter = context.createBiquadFilter();
+		lowFilter.type = "lowpass";
+		soundSource.connect(lowFilter);
+
 		var analyser = context.createAnalyser();
-		soundSource.connect(analyser);
+		lowFilter.connect(analyser);
 		analyser.connect(context.destination);
 
 		analyser.fftSize = stash.barCount * 2;
@@ -102,8 +106,14 @@ var createSoundSource = function(context, audioData) {
  	else {
 		console.log("Using microphone");
 		soundSource = context.createMediaStreamSource(audioData);
+
+		var lowFilter = context.createBiquadFilter();
+		lowFilter.type = "lowpass";
+		soundSource.connect(lowFilter);
+
+
 		var analyser = context.createAnalyser();
-		soundSource.connect(analyser);
+		lowFilter.connect(analyser);
 		//analyser.connect(context.destination);
 
 		analyser.fftSize = stash.barCount;
@@ -168,8 +178,8 @@ var visualize = function() {
 	d3.select('.d3-visualization')
 		.selectAll('.' + barClass)
 		.data(barHeights)
-		.transition()
-		.duration(60)
+		//.transition()
+		//.duration(60)
 		.attr('y', getY)
 		.attr('fill', function(v,i) { return stash.color(((i + stash.colorPhase) % sampleCount) / sampleCount); })
 		.attr('height', _.identity);
