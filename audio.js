@@ -151,7 +151,6 @@ var visualize = function() {
 	};
 
 	stash.colorPhase = (stash.colorPhase + 1 ) > sampleCount ? 0 : ++stash.colorPhase;
-	console.log(stash.colorPhase, ((64 + stash.colorPhase) % sampleCount) / sampleCount);
 	// Create
 	d3.select('.d3-visualization')
 		.selectAll('.' + barClass)
