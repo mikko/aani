@@ -11,6 +11,7 @@ var stash = {};
 stash.history = [];
 stash.historyIndex = 0;
 stash.historyLevels = 2;
+stash.barCount = 128;
 
 var userMediaGot = function(stream) {
 	d3.select('#audio_file').remove();
@@ -27,6 +28,9 @@ navigator.getUserMedia = (navigator.getUserMedia ||
 navigator.getUserMedia( {video: false, audio:true}, userMediaGot, function(e) { console.log(e); } );
 
 var audioInit = function(audioFile) {
+	stash.width = $('.d3-visualization').width();
+	stash.height = $('.d3-visualization').height();
+
 	if( !audioFile ) return;
 	var context;
 	if (typeof AudioContext !== "undefined") {
@@ -74,7 +78,7 @@ var createSoundSource = function(context, audioData) {
 		soundSource.connect(analyser);
 		analyser.connect(context.destination);
 
-		analyser.fftSize = 128;
+		analyser.fftSize = stash.barCount * 2;
 		var bufferLength = analyser.frequencyBinCount;
 		var dataArray = new Uint8Array(bufferLength);
 		analyser.getByteTimeDomainData(dataArray);
@@ -101,7 +105,7 @@ var createSoundSource = function(context, audioData) {
 		soundSource.connect(analyser);
 		//analyser.connect(context.destination);
 
-		analyser.fftSize = 128;
+		analyser.fftSize = stash.barCount;
 		var bufferLength = analyser.frequencyBinCount;
 		var dataArray = new Uint8Array(bufferLength);
 		analyser.getByteTimeDomainData(dataArray);
@@ -125,8 +129,9 @@ var visualize = function() {
 	stash.analyser.getByteTimeDomainData(stash.dataArray);
 	
 	var barClass = 'barClass';
-	var barWidth = 10;
-	var barMaxHeight = 200;
+	var barWidth = stash.width / (stash.dataArray.length + 1);
+	var barMaxHeight = stash.height;
+	
 	var sampleCount = stash.dataArray.length;
 
 	var barHeights = _.map(stash.dataArray, function(v,i) {
@@ -161,8 +166,8 @@ var visualize = function() {
 	d3.select('.d3-visualization')
 		.selectAll('.' + barClass)
 		.data(barHeights)
-		//.transition()
-		//.duration(50)
+		.transition()
+		.duration(60)
 		.attr('y', getY)
 		.attr('height', _.identity);
 }

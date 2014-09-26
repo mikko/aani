@@ -6,17 +6,12 @@
 		<script type="text/javascript" src="d3.v3.min.js"></script>
 		<style>
 			.visualization {
-				width: 600px;
-				height: 500px;
+				width: 100%;
+				height: 100%;
 			}
 			.d3-container, .d3-visualization {
-				width: 600px;
-				height: 400px;
-				display: table-cell;
-				vertical-align: middle;
-				text-align: center;
-  				-webkit-user-select: none;
-  				transform-style: preserve-3d;
+				width: 100%;
+				height: 100%;
 			}
 			.d3-history {
 				position: absolute;
@@ -28,12 +23,12 @@
 		<h3 id="file_name">No file loaded</h3>
 		<div class="visualization">
 			<div class="d3-container">
-				<svg class="d3-visualization" width="600px" height:"400px"></svg>
+				<svg class="d3-visualization"></svg>
 			</div>
 		</div>
 		<script>
 			audio_file.onchange = audioFileUploaded;
-
+			console.log($('.d3-visualization').width());
 			//audioInit();
 		</script
 	</body>
