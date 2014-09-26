@@ -99,7 +99,7 @@ var createSoundSource = function(context, audioData) {
 		soundSource = context.createMediaStreamSource(audioData);
 		var analyser = context.createAnalyser();
 		soundSource.connect(analyser);
-		analyser.connect(context.destination);
+		//analyser.connect(context.destination);
 
 		analyser.fftSize = 128;
 		var bufferLength = analyser.frequencyBinCount;
