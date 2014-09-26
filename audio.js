@@ -12,6 +12,19 @@ stash.history = [];
 stash.historyIndex = 0;
 stash.historyLevels = 2;
 
+var userMediaGot = function(stream) {
+	console.log(stream);
+	stash.isMic = true;
+	audioInit(stream);
+
+}
+
+navigator.getUserMedia = (navigator.getUserMedia ||
+                          navigator.webkitGetUserMedia ||
+                          navigator.mozGetUserMedia ||
+                          navigator.msGetUserMedia);
+navigator.getUserMedia( {video: false, audio:true}, userMediaGot, function(e) { console.log(e); } );
+
 var audioInit = function(audioFile) {
 	if( !audioFile ) return;
 	var context;
@@ -44,40 +57,65 @@ var audioInit = function(audioFile) {
 
 var createSoundSource = function(context, audioData) {
 	// create a sound source
-	soundSource = context.createBufferSource();
- 
-	// The Audio Context handles creating source
-	// buffers from raw binary data
-	soundBuffer = context.decodeAudioData(
+	if(!stash.isMic) {
+		console.log("Not using microphone");
+		soundSource = context.createBufferSource();
+		
+		// buffers from raw binary data
+		soundBuffer = context.decodeAudioData(
 		audioData, 
 		function onSuccess(decodedBuffer) {
 
-			// Add the buffered data to our object
-			soundSource.buffer = decodedBuffer;
+		// Add the buffered data to our object
+		soundSource.buffer = decodedBuffer;
 
-			var analyser = context.createAnalyser();
-			soundSource.connect(analyser);
-			analyser.connect(context.destination);
+		var analyser = context.createAnalyser();
+		soundSource.connect(analyser);
+		analyser.connect(context.destination);
 
-			analyser.fftSize = 128;
-			var bufferLength = analyser.frequencyBinCount;
-			var dataArray = new Uint8Array(bufferLength);
-			analyser.getByteTimeDomainData(dataArray);
-			
-			_.range(analyser.fftSize / 2).forEach(function(i) {
-				$('.visualization').append($('<span>&nbsp;</span>'));
-			});
+		analyser.fftSize = 128;
+		var bufferLength = analyser.frequencyBinCount;
+		var dataArray = new Uint8Array(bufferLength);
+		analyser.getByteTimeDomainData(dataArray);
+		
+		_.range(analyser.fftSize / 2).forEach(function(i) {
+			$('.visualization').append($('<span>&nbsp;</span>'));
+		});
 
-			stash.analyser = analyser;
-			stash.dataArray = dataArray;
+		stash.analyser = analyser;
+		stash.dataArray = dataArray;
 
-			visualize();
-			soundSource.start(context.currentTime); // play the source immediately
+		visualize();
+		soundSource.start(context.currentTime); // play the source immediately
 
 		}, 
 		function multiFail() { 
 			console.log("Multifail", arguments); 
 		});
+	}
+ 	else {
+		console.log("Using microphone");
+		soundSource = context.createMediaStreamSource(audioData);
+		var analyser = context.createAnalyser();
+		soundSource.connect(analyser);
+		analyser.connect(context.destination);
+
+		analyser.fftSize = 128;
+		var bufferLength = analyser.frequencyBinCount;
+		var dataArray = new Uint8Array(bufferLength);
+		analyser.getByteTimeDomainData(dataArray);
+		
+		_.range(analyser.fftSize / 2).forEach(function(i) {
+			$('.visualization').append($('<span>&nbsp;</span>'));
+		});
+
+		stash.analyser = analyser;
+		stash.dataArray = dataArray;
+
+		visualize();
+	}
+
+	
 }
 
 var visualize = function() {
@@ -100,7 +138,7 @@ var visualize = function() {
 	else {
 		++stash.historyIndex;
 	}
-	
+
 	var getY = function(v) {
 		return barMaxHeight - v;
 	};
