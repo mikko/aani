@@ -12,6 +12,7 @@ stash.history = [];
 stash.historyIndex = 0;
 stash.historyLevels = 2;
 stash.barCount = 128;
+stash.colorPhase = 0;
 
 var userMediaGot = function(stream) {
 	d3.select('#audio_file').remove();
@@ -41,7 +42,7 @@ var audioInit = function(audioFile) {
 	    throw new Error('AudioContext not supported. :(');
 	}
 
-	stash.color = d3.interpolateRgb("orange", "blue");
+	stash.color = d3.interpolateRgb("blue", "green");
 
 	createSoundSource(context, audioFile);
 
@@ -149,6 +150,8 @@ var visualize = function() {
 		return barMaxHeight - v;
 	};
 
+	stash.colorPhase = (stash.colorPhase + 1 ) > sampleCount ? 0 : ++stash.colorPhase;
+	console.log(stash.colorPhase, ((64 + stash.colorPhase) % sampleCount) / sampleCount);
 	// Create
 	d3.select('.d3-visualization')
 		.selectAll('.' + barClass)
@@ -156,7 +159,7 @@ var visualize = function() {
 		.enter()
 		.append('rect')
 		.attr('class', barClass)
-		.attr('fill', function(v,i) { return stash.color(i/sampleCount); })
+		.attr('fill', function(v,i) { return stash.color(i / sampleCount); })
 		.attr('x', function(v, i) { return (i + 0.5) * barWidth})
 		.attr('y', getY)
 		.attr('width', barWidth * 0.8)
@@ -169,5 +172,6 @@ var visualize = function() {
 		.transition()
 		.duration(60)
 		.attr('y', getY)
+		.attr('fill', function(v,i) { return stash.color(((i + stash.colorPhase) % sampleCount) / sampleCount); })
 		.attr('height', _.identity);
 }
