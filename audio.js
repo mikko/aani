@@ -32,8 +32,8 @@ navigator.getUserMedia = (navigator.getUserMedia ||
 navigator.getUserMedia( {video: false, audio:true}, userMediaGot, function(e) { console.log(e); } );
 
 var audioInit = function(audioFile) {
-	stash.width = $('.d3-visualization').width();
-	stash.height = $('.d3-visualization').height();
+	stash.width = $('.video-container').width();
+	stash.height = $('.video-container').height();
 
 	if( !audioFile ) return;
 	var context;
@@ -146,41 +146,7 @@ var visualize = function() {
 	stash.averageSum += barHeights[0];
 	stash.average = stash.averageSum / stash.sampleCount;
 
-	if( stash.historyIndex > stash.historyLevels ) {
-		stash.historyIndex = 0;
-	}
-	else {
-		++stash.historyIndex;
-	}
-
-	var getY = function(v) {
-		return barMaxHeight - v;
-	};
-
-	stash.colorPhase = (stash.colorPhase + 1 ) > sampleCount ? 0 : ++stash.colorPhase;
-	// Create
-	d3.select('.d3-visualization')
-		.selectAll('.' + barClass)
-		.data(barHeights)
-		.enter()
-		.append('rect')
-		.attr('class', barClass)
-		.attr('fill', function(v,i) { return stash.color(i / sampleCount); })
-		.attr('x', function(v, i) { return (i + 0.5) * barWidth})
-		.attr('y', getY)
-		.attr('width', barWidth * 0.8)
-		.attr('height', _.identity);
-
-	// Update
-	d3.select('.d3-visualization')
-		.selectAll('.' + barClass)
-		.data(barHeights)
-		.transition()
-		.duration(60)
-		.attr('y', getY)
-		.attr('fill', function(v,i) { return stash.color(((i + stash.colorPhase) % sampleCount) / sampleCount); })
-		.attr('height', _.identity);
-
 	d3.select('.video-container')
-		.attr('style', '-webkit-filter: blur(' + (barHeights[0] - stash.average) / barMaxHeight * 10 + 'px);');
+		.attr('style', '-webkit-filter: blur(' + Math.max((barHeights[0] - stash.average) / barMaxHeight, 0) * 40 + 'px);' +
+						'-webkit-filter: saturate(' + ((Math.max((barHeights[0] - stash.average) / barMaxHeight, 0) * 10) + 1)+ ');');
 }
