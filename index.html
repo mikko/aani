@@ -19,11 +19,26 @@
 			.d3-history {
 				position: absolute;
 			}
+			#video {
+				width: 50%;
+			}
 		</style>
 	</head>
 	<body>
 		<input id="audio_file" type="file" accept="audio/*" />
 		<h3 id="file_name">No file loaded</h3>
+
+		<div class="video-container">
+			<video id="video" controls="" autoplay="" loop="">
+			  <source src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm" type="video/webm">
+			  <source src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.mp4" type="video/mp4">
+			   Your browser does not support the video tag.
+			</video>
+			
+			<!--
+			<video src="http://webm.land/media/cJHO.webm" type="video/webm" id="video" controls="" autoplay="" loop=""></video>
+		-->
+		</div>
 		<div class="visualization">
 			<div class="d3-container">
 				<svg class="d3-visualization"></svg>
@@ -32,7 +47,11 @@
 		<script>
 			audio_file.onchange = audioFileUploaded;
 			console.log($('.d3-visualization').width());
+
+			//var myVid=document.getElementById("video");
+			//myVid.playbackRate=5;
 			//audioInit();
-		</script
+		</script>
+
 	</body>
 </html>

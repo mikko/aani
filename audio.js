@@ -13,6 +13,9 @@ stash.historyIndex = 0;
 stash.historyLevels = 2;
 stash.barCount = 128;
 stash.colorPhase = 0;
+stash.average = 0;
+stash.averageSum = 0;
+stash.sampleCount = 0;
 
 var userMediaGot = function(stream) {
 	d3.select('#audio_file').remove();
@@ -139,6 +142,10 @@ var visualize = function() {
 		return v / 255 * barMaxHeight;
 	});
 
+	++stash.sampleCount;
+	stash.averageSum += barHeights[0];
+	stash.average = stash.averageSum / stash.sampleCount;
+
 	if( stash.historyIndex > stash.historyLevels ) {
 		stash.historyIndex = 0;
 	}
@@ -173,4 +180,7 @@ var visualize = function() {
 		.attr('y', getY)
 		.attr('fill', function(v,i) { return stash.color(((i + stash.colorPhase) % sampleCount) / sampleCount); })
 		.attr('height', _.identity);
+
+	d3.select('.video-container')
+		.attr('style', '-webkit-filter: blur(' + (barHeights[0] - stash.average) / barMaxHeight * 10 + 'px);');
 }
