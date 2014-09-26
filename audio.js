@@ -13,7 +13,8 @@ stash.historyIndex = 0;
 stash.historyLevels = 2;
 
 var userMediaGot = function(stream) {
-	console.log(stream);
+	d3.select('#audio_file').remove();
+	d3.select('#file_name').remove();
 	stash.isMic = true;
 	audioInit(stream);
 
