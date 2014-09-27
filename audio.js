@@ -14,6 +14,28 @@ stash.historyLevels = 2;
 stash.barCount = 1024;
 stash.colorPhase = 0;
 
+stash.peakTolerance = 1.3;
+stash.toleranceUpdated = 0;
+
+var initBeatDetection = function() {
+	stash.beatAverage = 0;
+	stash.peakBuffer = [];
+	stash.currentPeakBufferIndex = 0;
+	stash.peakBufferLength = 200; // Around 1s with shortest possible setInterval
+	stash.beatSum = 0;
+	stash.beatCount = 0;
+	stash.beatMinTolerance = 250;
+	stash.beatMinDelta = 375;
+	stash.beatMaxDelta = 2000;
+	stash.prevBeat = 0;
+	stash.beatBuffer = [];
+	stash.currentBeatBufferIndex = 0;
+	stash.beatBufferLength = 16;
+	stash.beatAverage = 0;
+}
+
+initBeatDetection();
+
 var userMediaGot = function(stream) {
 	d3.select('#audio_file').remove();
 	d3.select('#file_name').remove();
@@ -79,9 +101,11 @@ var createSoundSource = function(context, audioData) {
 		lowFilter.type = "lowpass";
 		soundSource.connect(lowFilter);
 
+
 		var analyser = context.createAnalyser();
 		lowFilter.connect(analyser);
-		analyser.connect(context.destination);
+		//analyser.connect(context.destination);
+		soundSource.connect(context.destination);
 
 		analyser.fftSize = stash.barCount * 2;
 		var bufferLength = analyser.frequencyBinCount;
@@ -95,7 +119,10 @@ var createSoundSource = function(context, audioData) {
 		stash.analyser = analyser;
 		stash.dataArray = dataArray;
 
-		visualize();
+		//visualize();
+
+		setInterval(visualize, 0);
+
 		soundSource.start(context.currentTime); // play the source immediately
 
 		}, 
@@ -128,59 +155,114 @@ var createSoundSource = function(context, audioData) {
 		stash.analyser = analyser;
 		stash.dataArray = dataArray;
 
-		visualize();
+		//visualize();
+		setInterval(visualize, 0);
 	}
 
 	
 }
 
+var onBeat = function() {
+	var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+
+	d3.select('body')
+		.attr('style', 'background-color: ' + color);
+}
+
 var visualize = function() {
-	requestAnimationFrame(visualize);
-	
+	var now = new Date().getTime();
 	stash.analyser.getByteTimeDomainData(stash.dataArray);
-	
-	var barClass = 'barClass';
-	var barWidth = stash.width / (stash.dataArray.length + 1);
-	var barMaxHeight = stash.height;
-	
-	var sampleCount = stash.dataArray.length;
+	//requestAnimationFrame(visualize);
 
-	var barHeights = _.map(stash.dataArray, function(v,i) {
-		return v / 255 * barMaxHeight;
-	});
+// stash.beatAverage = 0;
+// stash.peakBuffer = [];
+// stash.beatSum = 0;
+// stash.beatCount = 0;
+// stash.beatMinTolerance = 250;
+// stash.beatMinDelta = 375;
+// stash.beatMaxDelta = 850;
+// stash.prevBeat = new Date().getTime();
+// stash.peakBufferLength = 200; // Around 1s with shortest possible setInterval
+// stash.currentPeakBufferIndex = 0;
 
-	if( stash.historyIndex > stash.historyLevels ) {
-		stash.historyIndex = 0;
+	var soundImpulse = _.reduce(stash.dataArray, function(memo, v) { return memo + v * v; }, 0);
+
+	var sum = _.reduce(
+		stash.peakBuffer, 
+		function(memo, v) {  return memo + v; },
+		0);
+
+	var soundAverage = sum / stash.peakBuffer.length;
+
+	
+	var sincePrevBeat = now - stash.prevBeat;
+
+	var beatDetected = function(missed) {
+		var isFirstBeat = stash.prevBeat == 0;
+		stash.prevBeat = now;
+		onBeat();
+		if(isFirstBeat || missed) {
+			return;
+		}
+		stash.beatBuffer[stash.currentBeatBufferIndex] = sincePrevBeat;
+		
+		stash.currentBeatBufferIndex = stash.currentBeatBufferIndex + 1 > stash.beatBufferLength 
+			? 0 
+			: stash.currentBeatBufferIndex + 1;
+		
+		var beatSum = _.reduce(
+				stash.beatBuffer, 
+				function(memo, v) {  return memo + v; },
+				0);
+
+		stash.beatAverage = beatSum / stash.beatBuffer.length;
+
+		console.log(stash.beatAverage, "BPM");
 	}
+
+	var noBeatsDetected = function() {
+		if( stash.peakTolerance === 1.1 ) {
+			console.log("No point lowering tolerance under 1.1");
+			stash.toleranceUpdated = now;
+			return;
+		}
+		initBeatDetection();
+		stash.peakTolerance = Math.max( 1.1, stash.peakTolerance - 0.02 );
+		
+		console.log("Beat tolerance dropped to", stash.peakTolerance);
+	}
+
+	if( sincePrevBeat > stash.beatMinTolerance && soundImpulse > (soundAverage * stash.peakTolerance) ) {
+		console.log("BEAT");
+		
+		beatDetected();
+	} 
 	else {
-		++stash.historyIndex;
+		if( stash.beatBuffer.length >= stash.beatBufferLength && sincePrevBeat > stash.beatAverage ) {
+			console.log("MISSED BEAT", stash.beatAverage);
+			beatDetected(true);
+		}
+
+		if( stash.toleranceUpdated === 0 || 
+			( (now - stash.toleranceUpdated) > stash.beatMaxDelta && sincePrevBeat > stash.beatMaxDelta ) ) {
+			noBeatsDetected();
+		}
+
+		stash.peakBuffer[stash.currentPeakBufferIndex] = soundImpulse;
+		stash.currentPeakBufferIndex = stash.currentPeakBufferIndex + 1 > stash.peakBufferLength 
+			? 0 
+			: stash.currentPeakBufferIndex + 1;
+		
+		++stash.beatCount;
+
 	}
 
-	var getY = function(v) {
-		return barMaxHeight - v;
-	};
-
-	stash.colorPhase = (stash.colorPhase + 1 ) > sampleCount ? 0 : ++stash.colorPhase;
-	// Create
-	d3.select('.d3-visualization')
-		.selectAll('.' + barClass)
-		.data(barHeights)
-		.enter()
-		.append('rect')
-		.attr('class', barClass)
-		.attr('fill', function(v,i) { return stash.color(i / sampleCount); })
-		.attr('x', function(v, i) { return (i + 0.5) * barWidth})
-		.attr('y', getY)
-		.attr('width', barWidth * 0.8)
-		.attr('height', _.identity);
-
-	// Update
-	d3.select('.d3-visualization')
-		.selectAll('.' + barClass)
-		.data(barHeights)
-		//.transition()
-		//.duration(60)
-		.attr('y', getY)
-		.attr('fill', function(v,i) { return stash.color(((i + stash.colorPhase) % sampleCount) / sampleCount); })
-		.attr('height', _.identity);
+	// trying something
+	// var now = new Date().getTime();
+	// var delta = now - stash.prevBeat;
+	
 }
