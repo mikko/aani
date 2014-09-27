@@ -55,6 +55,7 @@ var audioInit = function(audioFile) {
 	stash.height = $('.d3-visualization').height();
 
 	if( !audioFile ) return;
+	d3.select('.video-container').attr("style", "display: block");
 	var context;
 	if (typeof AudioContext !== "undefined") {
 	    context = new AudioContext();
@@ -65,7 +66,7 @@ var audioInit = function(audioFile) {
 	}
 
 	stash.color = d3.interpolateRgb("blue", "green");
-
+	
 	createSoundSource(context, audioFile);
 
 /*
@@ -163,6 +164,7 @@ var createSoundSource = function(context, audioData) {
 }
 
 var onBeat = function() {
+	/*
 	var letters = '0123456789ABCDEF'.split('');
     var color = '#';
     for (var i = 0; i < 6; i++ ) {
@@ -171,6 +173,12 @@ var onBeat = function() {
 
 	d3.select('body')
 		.attr('style', 'background-color: ' + color);
+	*/
+	d3.selectAll('.video-item')
+		.attr('style', '-webkit-filter: blur(5px);')
+		.transition()
+		.duration(50)
+		.attr('style', '-webkit-filter: blur(0px);');
 }
 
 var visualize = function() {

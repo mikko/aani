@@ -19,13 +19,24 @@
 			.d3-history {
 				position: absolute;
 			}
+			.video-item {
+				width: 70%;
+				margin-left: 15%;
+				float: left;
+			}
 		</style>
 	</head>
 	<body>
 		<input id="audio_file" type="file" accept="audio/*" />
 		<h3 id="file_name">No file loaded</h3>
 		<div id="debug">
-			
+
+		</div>
+		<div class="video-container" style="display:none">
+			<video class="video-item" src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm" type="video/webm" controls="" autoplay="" loop=""></video>
+			<!--
+			<video src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" class="video-item" controls="" autoplay="" loop=""></video>
+			-->
 		</div>
 		<div class="visualization">
 			<div class="d3-container">
@@ -35,6 +46,7 @@
 		<script>
 			audio_file.onchange = audioFileUploaded;
 			console.log($('.d3-visualization').width());
+
 			//audioInit();
 		</script
 	</body>
