@@ -87,7 +87,7 @@ var audioInit = function(audioFile) {
 var createSoundSource = function(context, audioData) {
 	// create a sound source
 	if(!stash.isMic) {
-		console.log("Not using microphone");
+		console.log("Not using microphone, instead", audioData);
 		soundSource = context.createBufferSource();
 		
 		// buffers from raw binary data
@@ -95,36 +95,36 @@ var createSoundSource = function(context, audioData) {
 		audioData, 
 		function onSuccess(decodedBuffer) {
 
-		// Add the buffered data to our object
-		soundSource.buffer = decodedBuffer;
+			// Add the buffered data to our object
+			soundSource.buffer = decodedBuffer;
 
-		var lowFilter = context.createBiquadFilter();
-		lowFilter.type = "lowpass";
-		soundSource.connect(lowFilter);
+			var lowFilter = context.createBiquadFilter();
+			lowFilter.type = "lowpass";
+			soundSource.connect(lowFilter);
 
 
-		var analyser = context.createAnalyser();
-		lowFilter.connect(analyser);
-		//analyser.connect(context.destination);
-		soundSource.connect(context.destination);
+			var analyser = context.createAnalyser();
+			lowFilter.connect(analyser);
+			//analyser.connect(context.destination);
+			soundSource.connect(context.destination);
 
-		analyser.fftSize = stash.barCount * 2;
-		var bufferLength = analyser.frequencyBinCount;
-		var dataArray = new Uint8Array(bufferLength);
-		analyser.getByteTimeDomainData(dataArray);
-		
-		_.range(analyser.fftSize / 2).forEach(function(i) {
-			$('.visualization').append($('<span>&nbsp;</span>'));
-		});
+			analyser.fftSize = stash.barCount * 2;
+			var bufferLength = analyser.frequencyBinCount;
+			var dataArray = new Uint8Array(bufferLength);
+			analyser.getByteTimeDomainData(dataArray);
+			
+			_.range(analyser.fftSize / 2).forEach(function(i) {
+				$('.visualization').append($('<span>&nbsp;</span>'));
+			});
 
-		stash.analyser = analyser;
-		stash.dataArray = dataArray;
+			stash.analyser = analyser;
+			stash.dataArray = dataArray;
 
-		//visualize();
+			//visualize();
 
-		setInterval(visualize, 0);
+			setInterval(visualize, 0);
 
-		soundSource.start(context.currentTime); // play the source immediately
+			soundSource.start(context.currentTime); // play the source immediately
 
 		}, 
 		function multiFail() { 
@@ -174,10 +174,17 @@ var onBeat = function() {
 	d3.select('body')
 		.attr('style', 'background-color: ' + color);
 	*/
-	d3.selectAll('.video-item')
-		.attr('style', '-webkit-filter: blur(5px);')
+
+	var video = document.getElementById('video');
+	//video.pause();
+	video.currentTime = 0;
+	//video.playbackRate = 2;
+	//video.play();
+
+	d3.selectAll('body')
+		.attr('style', '-webkit-filter: blur(3px);')
 		.transition()
-		.duration(50)
+		.duration(100)
 		.attr('style', '-webkit-filter: blur(0px);');
 }
 

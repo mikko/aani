@@ -24,19 +24,22 @@
 				margin-left: 15%;
 				float: left;
 			}
+			#file_name {
+				color: white;
+			}
 		</style>
 	</head>
 	<body>
 		<input id="audio_file" type="file" accept="audio/*" />
-		<h3 id="file_name">No file loaded</h3>
-		<div id="debug">
-
-		</div>
+		<h3 id="file_name">Select file, allow microphone or enter soundcloud url</h3>
+		<input id="soundcloud_input" name="searchterm" placeholder="search string or soundcloud url" size="70" value="http://soundcloud.com/knifepartyinc/knife-party-begin-again"></input>
+		<input id="soundcloud_submit" type="button" value="PLAY"></input>
 		<div class="video-container" style="display:none">
-			<video class="video-item" src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm" type="video/webm" controls="" autoplay="" loop=""></video>
+			
 			<!--
-			<video src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" class="video-item" controls="" autoplay="" loop=""></video>
+			<video class="video-item" id="video" src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm" type="video/webm" controls="" autoplay="" loop=""></video>
 			-->
+			<video class="video-item" id="video" src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" controls="" autoplay="" loop=""></video>
 		</div>
 		<div class="visualization">
 			<div class="d3-container">
@@ -46,8 +49,58 @@
 		<script>
 			audio_file.onchange = audioFileUploaded;
 			console.log($('.d3-visualization').width());
-
+			video.playbackRate = 3;
 			//audioInit();
-		</script
+		</script>
+
+
+		<!-- testing soundcould -->
+		<script src="//connect.soundcloud.com/sdk.js"></script>
+		<script>
+			var clientId = 'd714d745be4390fe9d73c0bfd2a4909c';
+
+			SC.initialize({
+				client_id: clientId
+			});
+			
+			soundcloud_submit.onclick = function() { console.log("Click"); loadSoundcloud(); };
+
+			var loadSoundcloud = function() {
+				var searchTerm = soundcloud_input.value;
+				console.log(searchTerm);
+
+				//var testUrl = 'http://soundcloud.com/knifepartyinc/knife-party-begin-again';
+			
+				var resolveUrl = 'http://api.soundcloud.com/resolve.json?url=' + searchTerm + '&client_id=' +clientId;
+
+
+				//"/users/frivolous/tracks"
+				SC.get(resolveUrl, {limit: 1}, function(track){
+					var url = track.stream_url + '?client_id=' + clientId;
+					var name = track.title;
+					file_name.innerHTML = name;
+					console.log(track);
+
+					var request = new XMLHttpRequest();
+					  request.open('GET', url, true);
+					  request.responseType = 'arraybuffer';
+
+					  // Decode asynchronously
+					  request.onload = function() {
+					    
+					    audioInit(request.response);
+					  }
+					  request.send();
+
+					// var stream = SC.stream(url, 
+					// 	function(sound){
+					// 		console.log(sound);
+					// 		sound.play();
+					// 	});
+				});	
+			}
+				
+			
+		</script>
 	</body>
 </html>
