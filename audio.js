@@ -236,7 +236,7 @@ var visualize = function() {
 
 		stash.beatAverage = beatSum / stash.beatBuffer.length;
 
-		console.log(stash.beatAverage, "BPM");
+		//console.log(stash.beatAverage, "BPM");
 	}
 
 	var noBeatsDetected = function() {
@@ -258,7 +258,7 @@ var visualize = function() {
 	} 
 	else {
 		if( stash.beatBuffer.length >= stash.beatBufferLength && sincePrevBeat > stash.beatAverage ) {
-			console.log("MISSED BEAT", stash.beatAverage);
+			console.log("MISSED BEAT");
 			beatDetected(true);
 		}
 
