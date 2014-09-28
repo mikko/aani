@@ -30,7 +30,7 @@ var initBeatDetection = function() {
 	stash.prevBeat = 0;
 	stash.beatBuffer = [];
 	stash.currentBeatBufferIndex = 0;
-	stash.beatBufferLength = 16;
+	stash.beatBufferLength = 8;
 	stash.beatAverage = 0;
 }
 
