@@ -55,6 +55,8 @@ var audioInit = function(audioFile) {
 	stash.width = $('.d3-visualization').width();
 	stash.height = $('.d3-visualization').height();
 
+	$('.hide-on-play').remove();
+
 	if( !audioFile ) return;
 	d3.select('.video-container').attr("style", "display: block");
 	var context;

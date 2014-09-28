@@ -7,6 +7,7 @@
 		<style>
 			body {
 				background-color: black;
+				color: lightgray;
 			}
 			.visualization {
 				width: 100%;
@@ -24,28 +25,41 @@
 				margin-left: 15%;
 				float: left;
 			}
-			#file_name {
-				color: white;
+			
+			label {
+				width: 60px;
+				display: inline-block;
 			}
 		</style>
 	</head>
 	<body>
-		<input id="audio_file" type="file" accept="audio/*" />
+		<h2>Beat detection via Web Audio API</h2>
 		<h3 id="file_name">Select file, allow microphone or enter soundcloud url</h3>
-		<input id="soundcloud_input" name="searchterm" placeholder="search string or soundcloud url" size="70" value="http://soundcloud.com/knifepartyinc/knife-party-begin-again"></input>
-		<input id="soundcloud_submit" type="button" value="PLAY"></input>
+		<div class="hide-on-play">
+			<input id="audio_file" type="file" accept="audio/*" />
+			<br/>
+			<label for="soundcloud_input">Music</label>
+			<input id="soundcloud_input" name="searchterm" placeholder="search string or soundcloud url" size="70" value="http://soundcloud.com/knifepartyinc/knife-party-begin-again"></input>
+			<input id="soundcloud_submit" type="button" value="PLAY"></input>
+			<br/>
+			<label for="webm_input">Webm</label>
+			<input id="webm_input" name="webm" placeholder="webm url" size="70" value="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm"></input>
+			<p>for example: http://webm.land/media/A0qi.webm</p>
+		</div>
 		<div class="video-container" style="display:none">
 			
 			<!--
 			<video class="video-item" id="video" src="http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm" type="video/webm" controls="" autoplay="" loop=""></video>
 			-->
-			<video class="video-item" id="video" src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" controls="" autoplay="" loop=""></video>
+			<video class="video-item" id="video" src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" controls="" autoplay="" loop="" muted=""></video>
 		</div>
+		<!--
 		<div class="visualization">
 			<div class="d3-container">
 				<svg class="d3-visualization"></svg>
 			</div>
 		</div>
+		-->
 		<script>
 			audio_file.onchange = audioFileUploaded;
 			//console.log($('.d3-visualization').width());
@@ -63,7 +77,11 @@
 				client_id: clientId
 			});
 			
-			soundcloud_submit.onclick = function() { console.log("Click"); loadSoundcloud(); };
+			soundcloud_submit.onclick = function() { 
+				console.log("Click");
+				video.setAttribute('src', webm_input.value);
+				loadSoundcloud(); 
+			};
 
 			var loadSoundcloud = function() {
 				var searchTerm = soundcloud_input.value;
