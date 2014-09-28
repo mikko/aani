@@ -26,12 +26,13 @@ var initBeatDetection = function() {
 	stash.beatCount = 0;
 	stash.beatMinTolerance = 250;
 	stash.beatMinDelta = 375;
-	stash.beatMaxDelta = 2000;
+	stash.beatMaxDelta = 1000;
 	stash.prevBeat = 0;
 	stash.beatBuffer = [];
 	stash.currentBeatBufferIndex = 0;
-	stash.beatBufferLength = 8;
+	stash.beatBufferLength = 16;
 	stash.beatAverage = 0;
+	stash.beatFound = false;
 }
 
 initBeatDetection();
@@ -97,15 +98,17 @@ var createSoundSource = function(context, audioData) {
 
 			// Add the buffered data to our object
 			soundSource.buffer = decodedBuffer;
+			var gainNode = context.createGain();
+			soundSource.connect(gainNode);
+			gainNode.gain.value = 1;
 
 			var lowFilter = context.createBiquadFilter();
 			lowFilter.type = "lowpass";
-			soundSource.connect(lowFilter);
+			gainNode.connect(lowFilter);
 
 
 			var analyser = context.createAnalyser();
 			lowFilter.connect(analyser);
-			//analyser.connect(context.destination);
 			soundSource.connect(context.destination);
 
 			analyser.fftSize = stash.barCount * 2;
@@ -181,11 +184,20 @@ var onBeat = function() {
 	//video.playbackRate = 2;
 	//video.play();
 
+	if( stash.beatCount !== 0 && stash.beatCount % 16 == 0 ) {
+		video.playbackRate = (Math.random() * 5).toFixed(1);
+	}
+
 	d3.selectAll('body')
 		.attr('style', '-webkit-filter: blur(3px);')
 		.transition()
 		.duration(100)
 		.attr('style', '-webkit-filter: blur(0px);');
+}
+
+var onBeatFound = function() {
+	var video = document.getElementById('video');
+	video.playbackRate = 3;
 }
 
 var visualize = function() {
@@ -204,7 +216,7 @@ var visualize = function() {
 // stash.peakBufferLength = 200; // Around 1s with shortest possible setInterval
 // stash.currentPeakBufferIndex = 0;
 
-	var soundImpulse = _.reduce(stash.dataArray, function(memo, v) { return memo + v * v; }, 0);
+	var soundImpulse = _.reduce(stash.dataArray, function(memo, v) { return memo + Math.pow(v, 3); }, 0);
 
 	var sum = _.reduce(
 		stash.peakBuffer, 
@@ -220,11 +232,17 @@ var visualize = function() {
 		var isFirstBeat = stash.prevBeat == 0;
 		stash.prevBeat = now;
 		onBeat();
-		if(isFirstBeat || missed) {
+		++stash.beatCount;
+		if(isFirstBeat || missed || stash.beatFound) {
 			return;
 		}
 		stash.beatBuffer[stash.currentBeatBufferIndex] = sincePrevBeat;
 		
+		if( stash.beatBuffer.length == stash.beatBufferLength -1 ) {
+			stash.beatFound = true;
+			onBeatFound();
+		}
+
 		stash.currentBeatBufferIndex = stash.currentBeatBufferIndex + 1 > stash.beatBufferLength 
 			? 0 
 			: stash.currentBeatBufferIndex + 1;
@@ -240,30 +258,39 @@ var visualize = function() {
 	}
 
 	var noBeatsDetected = function() {
-		if( stash.peakTolerance === 1.1 ) {
-			console.log("No point lowering tolerance under 1.1");
-			stash.toleranceUpdated = now;
+		stash.toleranceUpdated = now;
+		if( stash.peakTolerance === 1.2 ) {
 			return;
 		}
 		initBeatDetection();
-		stash.peakTolerance = Math.max( 1.1, stash.peakTolerance - 0.02 );
-		
-		console.log("Beat tolerance dropped to", stash.peakTolerance);
+		stash.peakTolerance = Math.max( 1.2, stash.peakTolerance - 0.05 );
 	}
 
-	if( sincePrevBeat > stash.beatMinTolerance && soundImpulse > (soundAverage * stash.peakTolerance) ) {
-		console.log("BEAT");
+	if( sincePrevBeat > stash.beatMinTolerance && 
+		soundImpulse > (soundAverage * stash.peakTolerance) ) {
+		if(	stash.beatBuffer.length > (stash.beatBufferLength * 4) ||
+				(
+					sincePrevBeat > (stash.beatAverage * 1.5 ) && 
+					sincePrevBeat < (stash.beatAverage * 0.5 ) 
+				)
+			) {
+			console.log("Propably too much correction", (stash.beatAverage/sincePrevBeat) );
+		} 
+		else {
+			beatDetected();
+		}
 		
-		beatDetected();
 	} 
 	else {
-		if( stash.beatBuffer.length >= stash.beatBufferLength && sincePrevBeat > stash.beatAverage ) {
-			console.log("MISSED BEAT");
+		if( stash.beatFound && sincePrevBeat > stash.beatAverage ) {
 			beatDetected(true);
 		}
 
-		if( stash.toleranceUpdated === 0 || 
-			( (now - stash.toleranceUpdated) > stash.beatMaxDelta && sincePrevBeat > stash.beatMaxDelta ) ) {
+		if( 
+			( 
+				(now - stash.toleranceUpdated) > stash.beatMaxDelta && 
+				sincePrevBeat > stash.beatMaxDelta 
+			) || stash.toleranceUpdated === 0  ) {
 			noBeatsDetected();
 		}
 
@@ -271,9 +298,6 @@ var visualize = function() {
 		stash.currentPeakBufferIndex = stash.currentPeakBufferIndex + 1 > stash.peakBufferLength 
 			? 0 
 			: stash.currentPeakBufferIndex + 1;
-		
-		++stash.beatCount;
-
 	}
 
 	// trying something
