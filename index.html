@@ -81,10 +81,6 @@
 			SC.initialize({
 				client_id: clientId
 			});
-			
-			
-
-			soundcloud_submit.onclick = run;
 
 			var loadSoundcloud = function() {
 				var searchTerm = soundcloud_input.value;
@@ -132,6 +128,8 @@
 				share_url.innerHTML = document.location.origin + "#" + soundcloud_input.value + "##" + webm_input.value;
 				loadSoundcloud(); 
 			};
+
+			soundcloud_submit.onclick = run;
 
 			if( audioUrl && videoUrl ) {
 				soundcloud_input.value = audioUrl;
