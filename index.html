@@ -30,12 +30,16 @@
 				width: 60px;
 				display: inline-block;
 			}
+			a {
+				color: white;
+			}
 		</style>
 	</head>
 	<body>
 		<h2>Beat detection via Web Audio API</h2>
 		<h3 id="file_name">Select file, allow microphone or enter soundcloud url</h3>
 		<p id="share_url"></p>
+		<a href="/">Make new</a>
 		<div class="hide-on-play">
 			<input id="audio_file" type="file" accept="audio/*" />
 			<br/>
@@ -78,23 +82,9 @@
 				client_id: clientId
 			});
 			
-			var hash = document.location.hash;
-			var paramsFromUrl = hash.split('##');
-			var audioUrl = paramsFromUrl[0].split('#')[1];
-			var videoUrl = paramsFromUrl[1];
-			console.log(audioUrl, videoUrl);
+			
 
-			if( audioUrl && videoUrl ) {
-				soundcloud_input.value = audioUrl;
-				webm_input.value = videoUrl;
-			}
-
-			soundcloud_submit.onclick = function() { 
-				console.log("Click");
-				video.setAttribute('src', webm_input.value);
-				share_url.innerHTML = document.location.origin + "#" + soundcloud_input.value + "##" + webm_input.value;
-				loadSoundcloud(); 
-			};
+			soundcloud_submit.onclick = run;
 
 			var loadSoundcloud = function() {
 				var searchTerm = soundcloud_input.value;
@@ -131,6 +121,24 @@
 				});	
 			}
 				
+			var hash = document.location.hash;
+			var paramsFromUrl = hash.split('##');
+			var audioUrl = paramsFromUrl[0].split('#')[1];
+			var videoUrl = paramsFromUrl[1];
+			console.log(audioUrl, videoUrl);
+
+			var run = function() {
+				video.setAttribute('src', webm_input.value);
+				share_url.innerHTML = document.location.origin + "#" + soundcloud_input.value + "##" + webm_input.value;
+				loadSoundcloud(); 
+			};
+
+			if( audioUrl && videoUrl ) {
+				soundcloud_input.value = audioUrl;
+				webm_input.value = videoUrl;
+				run();
+			};
+
 			
 		</script>
 	</body>
