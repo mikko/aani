@@ -183,7 +183,6 @@ var onBeat = function() {
 	var video = document.getElementById('video');
 	//video.pause();
 	video.currentTime = 0;
-	//video.playbackRate = 2;
 	//video.play();
 
 	if( stash.beatCount !== 0 && stash.beatCount % 16 == 0 ) {
