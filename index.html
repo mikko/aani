@@ -2,16 +2,16 @@
 	<head>
 		<script type="text/javascript" src="underscore.js"></script>
 		<script type="text/javascript" src="jquery.js"></script>
-		<script type="text/javascript" src="audio.js"></script>
 		<script type="text/javascript" src="d3.v3.min.js"></script>
+		<script type="text/javascript" src="audio.js"></script>
 		<style>
 			body {
 				background-color: black;
 				color: lightgray;
 			}
 			.visualization {
-				width: 100%;
-				height: 100%;
+				width: 800px;
+				height: 600px;
 			}
 			.d3-container, .d3-visualization {
 				width: 100%;
@@ -51,29 +51,19 @@
 			<input id="webm_input" name="webm" placeholder="webm url" size="70" value="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm"></input>
 			<p>for example: http://webm.land/media/A0qi.webm</p>
 		</div>
-		<div class="video-container" style="display:none">
-			<!--
-				Loris/Sloth http://img.pr0gramm.com/2014/09/22/6fbbc59433ce184a.webm
-				http://webmbassy.com/v/money-gun-spraying-money-bed-girl-14109060066.webm
-				shower: http://img.pr0gramm.com/2014/09/22/a39a02bc1731b42e.webm
-				owl: http://img.pr0gramm.com/2014/09/26/de3963956a0d5369.webm
-				satellite: http://img.pr0gramm.com/2014/09/28/6e04a942b0d9ed31.webm
-			-->
-			
-			<video class="video-item" id="video" src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" controls="" autoplay="" loop="" muted=""></video>
-		</div>
-		<!--
+
+		
 		<div class="visualization">
 			<div class="d3-container">
 				<svg class="d3-visualization"></svg>
 			</div>
 		</div>
-		-->
+		
+
 		<script>
 			audio_file.onchange = audioFileUploaded;
 			//console.log($('.d3-visualization').width());
-			video.playbackRate = 0.5;
-			//audioInit();
+			
 		</script>
 
 
@@ -128,7 +118,7 @@
 			console.log(audioUrl, videoUrl);
 
 			var run = function() {
-				video.setAttribute('src', webm_input.value);
+				//video.setAttribute('src', webm_input.value);
 				share_url.innerHTML = document.location.origin + "#" + soundcloud_input.value + "##" + webm_input.value;
 				loadSoundcloud(); 
 			};
