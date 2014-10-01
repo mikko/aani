@@ -262,11 +262,11 @@ var visualize = function() {
 
 	var noBeatsDetected = function() {
 		stash.toleranceUpdated = now;
-		if( stash.peakTolerance === 1.2 ) {
+		if( stash.peakTolerance === 1.05 ) {
 			return;
 		}
 		initBeatDetection();
-		stash.peakTolerance = Math.max( 1.2, stash.peakTolerance - 0.05 );
+		stash.peakTolerance = Math.max( 1.05, stash.peakTolerance - 0.05 );
 	}
 
 	if( sincePrevBeat > stash.beatMinTolerance && 
@@ -308,6 +308,7 @@ var visualize = function() {
 	var circleClassName = "circle-" + id;
 	var avgClassName = "avgline";
 	var toleranceClassName = "toleranceline";
+	var updateClassName = "updatedline";
 
 	d3.select('.' + d3Stuff.className)
 		.selectAll('.' + circleClassName)
@@ -316,10 +317,10 @@ var visualize = function() {
 		.append("circle")
 		.attr({
 			'class': circleClassName,
-			'style': 'stroke-width: 1; stroke: white',
+			'style': 'stroke-width: 1; stroke: white; fill: white;',
 			'cx': function(impulse, i) { return d3Stuff.x(id)},
 			'cy': function(impulse, i) { return d3Stuff.y(impulse)},
-			'r': '2px'
+			'r': '3px'
 	});
 
 	d3.select('.' + d3Stuff.className)
@@ -371,5 +372,26 @@ var visualize = function() {
 			y2: d3Stuff.y(stash.peakTolerance * soundAverage)
 		});
 
+
+	d3.select('.' + d3Stuff.className)
+		.selectAll('.' + updateClassName)
+		.data([0])
+		.enter()
+		.append("line")
+		.attr({
+			'class': updateClassName,
+			'style': 'stroke-width: 1; stroke: orange',
+			'x1': d3Stuff.x(id),
+			'x2': d3Stuff.x(id),
+			'y1': 0,
+			'y2': stash.height
+		});
+
+	d3.select('.' + d3Stuff.className)
+		.selectAll('.' + updateClassName)
+		.attr({
+			x1: d3Stuff.x(id),
+			x2: d3Stuff.x(id),
+		});
 	// stash.peakTolerance
 }
