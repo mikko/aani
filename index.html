@@ -3,7 +3,10 @@
 		<script type="text/javascript" src="underscore.js"></script>
 		<script type="text/javascript" src="jquery.js"></script>
 		<script type="text/javascript" src="d3.v3.min.js"></script>
+		<!--
 		<script type="text/javascript" src="audio.js"></script>
+		-->
+		<script type="text/javascript" src="violent.js"></script>
 		<style>
 			body {
 				background-color: black;
@@ -61,9 +64,8 @@
 		
 
 		<script>
-			audio_file.onchange = audioFileUploaded;
-			//console.log($('.d3-visualization').width());
-			
+			//audio_file.onchange = audioFileUploaded;
+			var violent = new Violent();
 		</script>
 
 
@@ -98,8 +100,16 @@
 
 					  // Decode asynchronously
 					  request.onload = function() {
-					    
-					    audioInit(request.response);
+					    var audio = request.response;
+					    violent
+					    	.audioData(audio)
+					    	.onSample(
+					    		function(samples) {
+					    			console.log(samples.length, "samples got"); 
+					    		})
+					    	.output(true)
+					    	.run();
+					    //audioInit(request.response);
 					  }
 					  request.send();
 
