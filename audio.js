@@ -51,6 +51,7 @@ navigator.getUserMedia = (navigator.getUserMedia ||
                           navigator.webkitGetUserMedia ||
                           navigator.mozGetUserMedia ||
                           navigator.msGetUserMedia);
+
 navigator.getUserMedia( {video: false, audio:true}, userMediaGot, function(e) { console.log(e); } );
 
 var d3Stuff = {};
@@ -304,7 +305,6 @@ var visualize = function() {
 	}
 
 	var id = stash.sampleCount % stash.peakBufferLength;
-	console.log("Updating index", id);
 	var circleClassName = "circle-" + id;
 	var avgClassName = "avgline";
 	var toleranceClassName = "toleranceline";

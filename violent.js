@@ -10,6 +10,8 @@ var Violent = function() {
 	var onBeat = function(){};
 	// Called when a new sample of FFT is handled
 	var onSample = function(){};
+	// Called when a new is added to impulse buffer
+	var onImpulseBuffer = function(){};
 	var output = false;
 
 	// Private
@@ -17,12 +19,17 @@ var Violent = function() {
 	var sampleCount = 1024;
 	var samples = null;
 	var analyzeInterval = 0; // 0 for "as often as possible"
+	var analyzer = null;
+	var dataArray = null;
 
 	var beat = {
 		sampleBuffer: [],
 		sampleBufferLength: 300,
 		sampleBufferIndex: 0,
-		average: 0
+		average: 0,
+		sampleCount: 0,
+		maxImpulse: null,
+		minImpulse: 0
 	};
 
 	var getAudioContext = function() {
@@ -38,20 +45,20 @@ var Violent = function() {
 	var initAnalysis = function(soundSource) {
 		var lowFilter = context.createBiquadFilter();
 		lowFilter.type = "lowpass";
-		var analyser = context.createAnalyser();
-		analyser.fftSize = sampleCount * 2;
+		analyzer = context.createAnalyser();
+		analyzer.fftSize = sampleCount * 2;
 		
 		soundSource.connect(lowFilter);
-		lowFilter.connect(analyser);
+		lowFilter.connect(analyzer);
 		
 		// Connect audio to output only if enabled
 		if (output) {
 			soundSource.connect(context.destination);
 		}
 
-		var bufferLength = analyser.frequencyBinCount;
-		var dataArray = new Uint8Array(bufferLength);
-		analyser.getByteTimeDomainData(dataArray);
+		var bufferLength = analyzer.frequencyBinCount;
+		dataArray = new Uint8Array(bufferLength);
+		analyzer.getByteTimeDomainData(dataArray);
 		
 		samples = dataArray;
 
@@ -60,9 +67,11 @@ var Violent = function() {
 	};
 
 	var analyze = function() {
+		analyzer.getByteTimeDomainData(dataArray);
 		nextSample(samples);
-		console.log("Beats in buffer", beat.sampleBuffer.length, "averaging", beat.average);
+		//console.log("Beats in buffer", beat.sampleBuffer.length, "averaging", beat.average);
 		onSample(samples);
+		onImpulseBuffer(beat.sampleBuffer);
 	};
 
 	var sum = function(values, modifier) {
@@ -83,6 +92,12 @@ var Violent = function() {
 			: beat.sampleBufferIndex + 1;
 
 		beat.average = average(beat.sampleBuffer);
+
+		// These needed?
+		++beat.sampleCount;
+		beat.minImpulse = Math.min(beat.minImpulse, impulse);
+		beat.maxImpulse = Math.max(beat.maxImpulse, impulse);
+		//console.log(beat.sampleCount, beat.minImpulse, "-", beat.maxImpulse);
 	};
 
 	var instance = function() {
@@ -139,6 +154,12 @@ var Violent = function() {
 	instance.onSample = function(fun) {
 		if (!arguments.length) return instance;
 		onSample = fun;
+		return instance;
+	};
+
+	instance.onImpulseBuffer = function(fun) {
+		if (!arguments.length) return instance;
+		onImpulseBuffer = fun;
 		return instance;
 	};
 

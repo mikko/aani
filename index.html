@@ -7,14 +7,15 @@
 		<script type="text/javascript" src="audio.js"></script>
 		-->
 		<script type="text/javascript" src="violent.js"></script>
+		<script type="text/javascript" src="visualization.js"></script>
 		<style>
 			body {
 				background-color: black;
 				color: lightgray;
 			}
 			.visualization {
-				width: 1200px;
-				height: 800px;
+				width: 95%;
+				height: 70%;
 			}
 			.d3-container, .d3-visualization {
 				width: 100%;
@@ -101,13 +102,21 @@
 					  // Decode asynchronously
 					  request.onload = function() {
 					    var audio = request.response;
+					    beatDebugGraph.init(
+					    	300, 
+					    	15000000, //Math.pow(155 * 1024, 2), 
+					    	21000000, //Math.pow(255 * 1024, 2), 
+					    	$('.d3-visualization').width(), 
+					    	$('.d3-visualization').height());
+
 					    violent
 					    	.audioData(audio)
-					    	.onSample(
+					    	.onImpulseBuffer(
 					    		function(samples) {
-					    			console.log(samples.length, "samples got"); 
+					    			beatDebugGraph.update(samples);
+					    			//console.log(samples); 
 					    		})
-					    	.output(true)
+					    	.output(false)
 					    	.run();
 					    //audioInit(request.response);
 					  }
