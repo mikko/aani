@@ -40,6 +40,9 @@ var beatDebugGraph = {
 		var variance = this.maxImpulse - this.minImpulse;
 		var tolerance = average + variance * 0.3;
 
+		this.y = d3.scale.linear().domain([(this.minImpulse - (variance * 0.3)), (this.maxImpulse + (variance * 0.3))]).range([this.height, 0]);
+		
+
 		d3.select('.' + this.className)
 		.selectAll('.' + this.pathClassName)
 		.data([0])

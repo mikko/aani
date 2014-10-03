@@ -14,8 +14,8 @@
 				color: lightgray;
 			}
 			.visualization {
-				width: 95%;
-				height: 70%;
+				width: 100%;
+				height: 90%;
 			}
 			.d3-container, .d3-visualization {
 				width: 100%;
@@ -41,6 +41,7 @@
 	</head>
 	<body>
 		<h2>Beat detection via Web Audio API</h2>
+		<!--
 		<h3 id="file_name">Select file, allow microphone or enter soundcloud url</h3>
 		<p id="share_url"></p>
 		<a href="/">Make new</a>
@@ -55,8 +56,15 @@
 			<input id="webm_input" name="webm" placeholder="webm url" size="70" value="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm"></input>
 			<p>for example: http://webm.land/media/A0qi.webm</p>
 		</div>
-
-		
+	-->
+<!--
+AUDIO:
+		<audio controls>
+			
+	
+				<source src="http://stream.futurice.com:8000/stream" type="audio/mpeg">
+		</audio>
+-->
 		<div class="visualization">
 			<div class="d3-container">
 				<svg class="d3-visualization"></svg>
@@ -73,6 +81,30 @@
 		<!-- testing soundcould -->
 		<script src="//connect.soundcloud.com/sdk.js"></script>
 		<script>
+			var audio = new Audio();
+			audio.src = "http://stream.futurice.com:8000/stream"; 
+			// "http://ai-radio.org:8000/radio.opus";
+			audio.play();
+
+			audio.addEventListener("canplaythrough", function () {
+				console.log('The file is loaded and ready to play!');
+				beatDebugGraph.init(
+					    	300, 
+					    	0, //Math.pow(155 * 1024, 2), 
+					    	30000000, //Math.pow(255 * 1024, 2), 
+					    	$('.d3-visualization').width(), 
+					    	$('.d3-visualization').height());
+				violent
+			    	.audioStream(audio)
+			    	.onImpulseBuffer(
+			    		function(samples) {
+			    			beatDebugGraph.update(samples);
+			    			//console.log(samples); 
+			    		})
+			    	.output(true)
+			    	.run();
+				}, false);
+
 			var clientId = 'd714d745be4390fe9d73c0bfd2a4909c';
 
 			SC.initialize({
@@ -104,8 +136,8 @@
 					    var audio = request.response;
 					    beatDebugGraph.init(
 					    	300, 
-					    	15000000, //Math.pow(155 * 1024, 2), 
-					    	21000000, //Math.pow(255 * 1024, 2), 
+					    	0, //Math.pow(155 * 1024, 2), 
+					    	30000000, //Math.pow(255 * 1024, 2), 
 					    	$('.d3-visualization').width(), 
 					    	$('.d3-visualization').height());
 
@@ -116,7 +148,7 @@
 					    			beatDebugGraph.update(samples);
 					    			//console.log(samples); 
 					    		})
-					    	.output(false)
+					    	.output(true)
 					    	.run();
 					    //audioInit(request.response);
 					  }
@@ -134,7 +166,7 @@
 			var paramsFromUrl = hash.split('##');
 			var audioUrl = paramsFromUrl[0].split('#')[1];
 			var videoUrl = paramsFromUrl[1];
-			console.log(audioUrl, videoUrl);
+			//console.log(audioUrl, videoUrl);
 
 			var run = function() {
 				//video.setAttribute('src', webm_input.value);
@@ -142,7 +174,7 @@
 				loadSoundcloud(); 
 			};
 
-			soundcloud_submit.onclick = run;
+			//soundcloud_submit.onclick = run;
 
 			if( audioUrl && videoUrl ) {
 				soundcloud_input.value = audioUrl;

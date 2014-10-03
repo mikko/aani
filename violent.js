@@ -63,7 +63,7 @@ var Violent = function() {
 		samples = dataArray;
 
 		setInterval(analyze, analyzeInterval);
-		soundSource.start(context.currentTime); // play the source immediately
+		//soundSource.start(context.currentTime); // play the source immediately
 	};
 
 	var analyze = function() {
@@ -119,7 +119,8 @@ var Violent = function() {
 				
 		}
 		else if (audioStream !== null) {
-			soundSource = context.createMediaStreamSource(audioStream);
+			console.log("Creating mediaStreamSource", audioStream);
+			soundSource = context.createMediaElementSource(audioStream);
 			initAnalysis(soundSource);
 		}
 		else {
