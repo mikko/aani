@@ -71,7 +71,7 @@ var Violent = function() {
 		nextSample(samples);
 		//console.log("Beats in buffer", beat.sampleBuffer.length, "averaging", beat.average);
 		onSample(samples);
-		onImpulseBuffer(beat.sampleBuffer);
+		onImpulseBuffer(beat.sampleBuffer, beat.sampleBufferIndex);
 	};
 
 	var sum = function(values, modifier) {

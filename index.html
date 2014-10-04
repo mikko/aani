@@ -29,6 +29,10 @@
 				margin-left: 15%;
 				float: left;
 			}
+			video {
+				width: 100%;
+				height: 90%;
+			}
 			
 			label {
 				width: 60px;
@@ -41,6 +45,8 @@
 	</head>
 	<body>
 		<h2>Beat detection via Web Audio API</h2>
+		<video src="http://webmbassy.com/v/awesome-basketball-dance-changing-rooms-celebration-1358107409f.webm" type="video/webm" id="video" controls="" autoplay="" loop=""></video>
+
 		<!--
 		<h3 id="file_name">Select file, allow microphone or enter soundcloud url</h3>
 		<p id="share_url"></p>
@@ -82,7 +88,7 @@ AUDIO:
 		<script src="//connect.soundcloud.com/sdk.js"></script>
 		<script>
 			var audio = new Audio();
-			audio.src = "http://stream.futurice.com:8000/stream"; 
+			audio.src = "http://188.117.44.132:8000/;?r=4189"; 
 			// "http://ai-radio.org:8000/radio.opus";
 			audio.play();
 
@@ -97,9 +103,9 @@ AUDIO:
 				violent
 			    	.audioStream(audio)
 			    	.onImpulseBuffer(
-			    		function(samples) {
-			    			beatDebugGraph.update(samples);
-			    			//console.log(samples); 
+			    		function(samples, index) {
+			    			beatDebugGraph.update(samples, index);
+			    			//index.log(samples); 
 			    		})
 			    	.output(true)
 			    	.run();
